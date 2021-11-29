@@ -21,7 +21,10 @@ export default function App() {
   ]);
   //------------------------------------------
 
-
+  // For the recordbutton color
+  const [recordButtonColor, setRecordButtonColor] = useState('black')
+  //------------------------------------------
+  
   // For the Image
   //------------------------------------------
   const [imageUri, setImageUri] = useState( 
@@ -70,6 +73,7 @@ export default function App() {
         );
         await recording.startAsync();
         SetisRecording(true);
+        setRecordButtonColor('red');
       } catch (error) {
         console.log(error);
       }
@@ -84,6 +88,7 @@ export default function App() {
       const result = recording.getURI();
       SetRecordedURI(result); // Here is the URI
       recording = new Audio.Recording();
+      setRecordButtonColor('black');
       SetisRecording(false);
       console.log("Recording saved at: ", RecordedURI)
       console.warn("Voice Recorded! Click Analyze to get your results.")
@@ -153,7 +158,7 @@ export default function App() {
 
         <CustomButton
           text = {isRecording ? 'Stop Recording' : 'Start Recording'}
-          color = 'black'
+          color = {recordButtonColor}
           textColor = 'white'
           onPress={isRecording ? () => stopRecording() : () => startRecording()}
         />
