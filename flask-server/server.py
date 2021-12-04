@@ -4,9 +4,10 @@ app = Flask(__name__)
 
 # Members for API Route
 
-@app.route("/members")
-def members():
-    return {"members": ["Member1", "Member2", "Member3"]}
+@app.route("/getResult")
+def get_result():
+    return {"Hello": "World"}
+    ## return "This is a test return from the Flask API"
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(host = "0.0.0.0", port = "8000", debug=True)

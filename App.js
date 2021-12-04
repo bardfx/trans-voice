@@ -11,6 +11,20 @@ let recordedText = " ";
 // let imageUri = {uri:  'https://images.unsplash.com/photo-1615789591457-74a63395c990?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxzZWFyY2h8MXx8ZG9tZXN0aWMlMjBjYXR8ZW58MHx8MHx8&w=1000&q=80'};
 
 export default function App() {
+
+  const [data, setData] = useState(' ')
+
+  useEffect(() => {
+    fetch("http://10.42.224.223:8000/getResult").then(res =>
+      res.json()
+    ).then (
+      data => {
+        setData(data)
+        console.log(data)
+      }
+    )
+  }, [])
+
   // For the DropDownPicker 
   //------------------------------------------
   const [open, setOpen] = useState(false);
@@ -33,7 +47,8 @@ export default function App() {
 
   const displayResult = async () => {
     setImageUri('https://miro.medium.com/max/2000/1*V2mgZ7y0ngd3q4DZ01xkEQ.png');
-    setAnalysisText('The result of the analysis would be displayed here');
+    console.log(data["Hello"]);
+    setAnalysisText(data["Hello"]);
   }
   //------------------------------------------
 
