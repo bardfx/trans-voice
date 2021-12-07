@@ -1,21 +1,24 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { View, StyleSheet, Button, Text, Pressable, ImageBackground, Image, ScrollView } from 'react-native';
 import { Audio } from 'expo-av';
-import Constants from 'expo-constants';
 import DropDownPicker from 'react-native-dropdown-picker';
 import CustomButton from './button';
+import * as FileSystem from "expo-file-system";
 
 let recording = new Audio.Recording();
 //const image = { uri: 'assets/images/background.png' };
 let recordedText = " ";
 // let imageUri = {uri:  'https://images.unsplash.com/photo-1615789591457-74a63395c990?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxzZWFyY2h8MXx8ZG9tZXN0aWMlMjBjYXR8ZW58MHx8MHx8&w=1000&q=80'};
 
+const FLASK_BACKEND = "http://10.42.224.223:8000/getResult";
+
 export default function App() {
 
   const [data, setData] = useState(' ')
+  const [text, setText] = React.useState("");
 
   useEffect(() => {
-    fetch("http://10.42.224.223:8000/getResult").then(res =>
+    fetch(FLASK_BACKEND).then(res =>
       res.json()
     ).then (
       data => {
@@ -46,9 +49,10 @@ export default function App() {
   );
 
   const displayResult = async () => {
-    setImageUri('https://miro.medium.com/max/2000/1*V2mgZ7y0ngd3q4DZ01xkEQ.png');
-    console.log(data["Hello"]);
-    setAnalysisText(data["Hello"]);
+    //setImageUri('https://miro.medium.com/max/2000/1*V2mgZ7y0ngd3q4DZ01xkEQ.png');
+    setImageUri(data["url"])
+    console.log(data["result"]);
+    setAnalysisText(data["result"]);
   }
   //------------------------------------------
 
@@ -83,9 +87,22 @@ export default function App() {
   const startRecording = async () => {
     if (AudioPerm === true) {
       try {
-        await recording.prepareToRecordAsync(
-          Audio.RECORDING_OPTIONS_PRESET_HIGH_QUALITY
-        );
+        await recording.prepareToRecordAsync({
+          //Audio.RECORDING_OPTIONS_PRESET_HIGH_QUALITY
+          android: {
+            extension: ".mp4",
+            audioEncoder: Audio.RECORDING_OPTION_ANDROID_AUDIO_ENCODER_AAC,
+            outputFormat: Audio.RECORDING_OPTION_ANDROID_OUTPUT_FORMAT_MPEG_4,
+          },
+          ios: {
+            extension: ".wav",
+            sampleRate: 44100,
+            numberOfChannels: 2,
+            bitRate: 128000,
+            audioQuality: Audio.RECORDING_OPTION_IOS_AUDIO_QUALITY_HIGH,
+            outputFormat: Audio.RECORDING_OPTION_IOS_OUTPUT_FORMAT_LINEARPCM,
+          },          
+        });
         await recording.startAsync();
         SetisRecording(true);
         setRecordButtonColor('red');
@@ -105,8 +122,18 @@ export default function App() {
       recording = new Audio.Recording();
       setRecordButtonColor('black');
       SetisRecording(false);
-      console.log("Recording saved at: ", RecordedURI)
+      console.log("Recording saved at: ", result)
       console.warn("Voice Recorded! Click Analyze to get your results.")
+      try {
+        const response = await FileSystem.uploadAsync(
+          FLASK_BACKEND, 
+          result
+        );
+        const body = JSON.stringify(response.body);
+        setText(body.text);
+      } catch (err) {
+        console.error(err);
+      }
       // recordedText = "Voice Recorded! Click Next to Continue."
     } catch (error) {
       console.log(error);
